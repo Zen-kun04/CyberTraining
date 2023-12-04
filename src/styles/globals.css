@@ -14,14 +14,50 @@
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
   }
+
+  @layer base {
+		body {
+			@apply dark:bg-zinc-900 bg-white
+		}
+	}
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+
+
+.dashboard {
+  margin-left: 16.5rem;
+  margin-right: 00.5rem;
+}
+
+#tsparticles {
+  position: relative;
+  z-index: -1;
+}
+
+.embla {
+  overflow: hidden;
+}
+.embla__container {
+  display: flex;
+}
+.embla__slide {
+  flex: 0 0 30%;
+  min-width: 0;
+}
+
+.embla__slide__img {
+  margin-bottom: 1rem;
+}
+
+.embla__container {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+.embla__slide:first-child{
+  margin-right: 2rem;
+}
+
+.embla__slide {
+  margin-left: 2rem;
 }
