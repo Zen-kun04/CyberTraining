@@ -118,94 +118,6 @@ def get_user_information(user_id: str):
 def update_user(user: dict):
     pass
 
-
-@app.route("/api/categories")
-def list_categories():
-    try:
-        if request.headers.get("Authorization", None) is not None and is_jwt_admin(request.headers.get("Authorization")):
-            conn = mysql.connect(
-                host=DATABASE_HOST, port=DATABASE_PORT, username=DATABASE_USERNAME, password=DATABASE_PASSWORD, database=DATABASE_NAME)
-            cur = conn.cursor()
-            cur.execute("SELECT * FROM category;")
-            categories = cur.fetchall()
-            result = [
-                {
-                    "id": category[0],
-                    "name": category[1],
-                    "created_at": category[2],
-                    "updated_at": category[3]
-                }
-                for category in categories
-            ]
-            return jsonify({
-                "code": 200,
-                "result": result
-            })
-        return jsonify({
-            "code": 498,
-            "error": "Invalid token"
-        })
-    except:
-        return jsonify({
-            "code": 400,
-            "error": "Bad request"
-        })
-
-
-@app.route('/api/challenge/list')
-def challenge_list():
-    try:
-        conn = mysql.connect(
-            host=DATABASE_HOST, port=DATABASE_PORT, username=DATABASE_USERNAME, password=DATABASE_PASSWORD, database=DATABASE_NAME)
-        cur = conn.cursor()
-        cur.execute("SELECT id, title, image FROM challenge")
-        challenges = cur.fetchall()
-
-        if result := [
-            {"id": x[0], "title": x[1], "image": x[2]} for x in challenges
-        ]:
-            return jsonify({
-                "code": 200,
-                "result": result
-            })
-        return jsonify({
-            "code": 404,
-            "message": "No results found"
-        })
-    except:
-        return jsonify({
-            "code": 400,
-            "error": "Bad request"
-        })
-
-
-@app.route('/api/quiz/list')
-def quiz_list():
-    try:
-        conn = mysql.connect(
-            host=DATABASE_HOST, port=DATABASE_PORT, username=DATABASE_USERNAME, password=DATABASE_PASSWORD, database=DATABASE_NAME)
-        cur = conn.cursor()
-        cur.execute("SELECT id, name, image FROM quiz")
-        challenges = cur.fetchall()
-
-        if result := [
-            {"id": x[0], "name": x[1], "image": x[2]} for x in challenges
-        ]:
-            return jsonify({
-                "code": 200,
-                "result": result
-            })
-        return jsonify({
-            "code": 404,
-            "message": "No results found"
-        })
-    except:
-        return jsonify({
-            "code": 400,
-            "error": "Bad request"
-        })
-
-
 @app.route('/api/user/delete/<user_id>')
 def user_delete(user_id: str):
     try:
@@ -229,30 +141,6 @@ def user_delete(user_id: str):
             "code": 400,
             "error": "Bad request"
         })
-
-
-# @app.route('/api/user/<user_id>')
-# def user_exist(user_id: str):
-#     try:
-#         if request.headers.get("Authorization", None) is not None and is_jwt_admin(request.headers.get("Authorization")):
-#             if user_id_exist(user_id):
-#                 return jsonify({
-#                     "code": 200
-#                 })
-#             return jsonify({
-#                 "code": 404,
-#                 "message": "User not found"
-#             })
-#         return jsonify({
-#             "code": 498,
-#             "error": "Invalid token"
-#         })
-#     except:
-#         return jsonify({
-#             "code": 400,
-#             "error": "Bad request"
-#         })
-
 
 @app.route('/api/users')
 def get_users():
@@ -350,32 +238,6 @@ def rank_update():
             "code": 400,
             "error": "Bad request"
         })
-
-
-@app.route('/api/user/information/<user_id>')
-def user_information(user_id: str):
-    try:
-        if request.headers.get("Authorization", None) is not None and is_jwt_admin(request.headers.get("Authorization")):
-            info = get_user_information(user_id)
-            if info is not None:
-                return jsonify({
-                    "code": 200,
-                    "result": info
-                })
-            return jsonify({
-                "code": 400,
-                "error": "Invalid user ID"
-            })
-        return jsonify({
-            "code": 498,
-            "error": "Invalid token"
-        })
-    except:
-        return jsonify({
-            "code": 400,
-            "error": "Bad request"
-        })
-
 
 @app.route('/api/jwt/decode')
 def decode_jwt():
@@ -548,6 +410,44 @@ USER_PROPERTIES = [
 ]
 
 
+@app.route('/api/delete/<entity>', methods=["POST"])
+def crud_delete(entity: str):
+    try:
+        if entity in ENTITY_LIST:
+            if request.headers.get("Authorization", None) is not None and is_jwt_admin(request.headers.get("Authorization")):
+                body = request.get_json()
+                if "id" in body:
+                    entity_id = body["id"]
+                    conn = mysql.connect(
+                        host=DATABASE_HOST, port=DATABASE_PORT, username=DATABASE_USERNAME, password=DATABASE_PASSWORD, database=DATABASE_NAME)
+                    cur = conn.cursor()
+                    cur.execute(
+                        f"DELETE FROM `{entity}` WHERE id = %s", (str(entity_id),))
+                    conn.commit()
+                    return jsonify({
+                        "code": 200,
+                        "error": f"Successfully deleted {entity}"
+                    })
+                return jsonify({
+                    "code": 400,
+                    "error": "Bad request"
+                })
+
+            return jsonify({
+                "code": 401,
+                "error": "Unauthorized"
+            })
+        return jsonify({
+            "code": 400,
+            "error": "Bad request"
+        })
+    except Exception:
+        return jsonify({
+            "code": 400,
+            "error": "Bad request"
+        })
+
+
 @app.route('/api/<entity>/<entity_id>')
 def crud_read(entity: str, entity_id: str):
     try:
@@ -580,6 +480,45 @@ def crud_read(entity: str, entity_id: str):
                             "result": {
                                 "id": entity_id,
                                 "name": res[0],
+                            }
+
+                        })
+                return jsonify({
+                    "code": 404,
+                    "message": "No results found"
+                })
+            
+            elif entity == "challenge":
+                if request.headers.get("Authorization", None) is not None and is_jwt_admin(request.headers.get("Authorization")):
+                    cur.execute("SELECT * FROM challenge WHERE id = %s",
+                                (entity_id,))
+                    if res := cur.fetchone():
+                        return jsonify({
+                            "code": 200,
+                            "result": {
+                                "id": res[0],
+                                "title": res[1],
+                                "description": res[2],
+                                "exploit": res[3],
+                                "category_id": res[4],
+                                "image": res[5],
+                                "created_at": res[6],
+                                "updated_at": res[7]
+                            }
+
+                        })
+                else:
+                    cur.execute("SELECT id, title, description, category_id, image FROM challenge WHERE id = %s",
+                                (entity_id,))
+                    if res := cur.fetchone():
+                        return jsonify({
+                            "code": 200,
+                            "result": {
+                                "id": res[0],
+                                "title": res[1],
+                                "description": res[2],
+                                "category_id": res[3],
+                                "image": res[4]
                             }
 
                         })
@@ -681,6 +620,10 @@ def crud_read(entity: str, entity_id: str):
                 return jsonify({
                     "code": 404,
                     "message": "No results found"
+                })
+            return jsonify({
+                    "code": 400,
+                    "message": "Invalid entity"
                 })
     except Exception as e:
         print(e)
@@ -846,10 +789,11 @@ def crud_list(entity: str):
                             "code": 200,
                             "result": result
                         })
-            
+
             elif entity == "user":
                 if request.headers.get("Authorization", None) is not None and is_jwt_admin(request.headers.get("Authorization")):
-                    cur.execute("SELECT id, username, rank_id, email, level, created_at, updated_at FROM user")
+                    cur.execute(
+                        "SELECT id, username, rank_id, email, level, created_at, updated_at FROM user")
                     if res := cur.fetchall():
                         result = [
                             {
@@ -872,7 +816,8 @@ def crud_list(entity: str):
                         "result": []
                     })
                 else:
-                    cur.execute("SELECT id, username, rank_id, level, created_at FROM user")
+                    cur.execute(
+                        "SELECT id, username, rank_id, level, created_at FROM user")
                     if res := cur.fetchall():
                         result = [
                             {
