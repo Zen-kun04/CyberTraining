@@ -4,6 +4,7 @@ import useEmblaCarousel, {
     EmblaOptionsType
 } from 'embla-carousel-react'
 import { ChallengeCarouselType } from '@/types/ChallengeType'
+import { useRouter } from 'next/router'
 
 const EmblaCarouselChallenges = ({ options, challenges }: { options: EmblaOptionsType, challenges: ChallengeCarouselType[] }) => {
     const [emblaRef, emblaApi] = useEmblaCarousel(options)
@@ -15,12 +16,16 @@ const EmblaCarouselChallenges = ({ options, challenges }: { options: EmblaOption
     }, [])
 
     useEffect(() => {
-        if (!emblaApi) return
+        if (!emblaApi) {
+          return
+        }
 
         onScroll(emblaApi)
         emblaApi.on('reInit', onScroll)
         emblaApi.on('scroll', onScroll)
     }, [emblaApi, onScroll])
+
+    const router = useRouter();
 
     return (
         <>
@@ -28,13 +33,36 @@ const EmblaCarouselChallenges = ({ options, challenges }: { options: EmblaOption
             <div className="embla dark:bg-indigo-700 bg-blue-400">
                 <div className="embla__viewport" ref={emblaRef}>
                     <div className="embla__container mt-5 mb-5">
+                        <div onClick={() => router.push('/challenge/1')} className="embla__slide hover:cursor-pointer" key="1">
+
+                            <img
+                                className="embla__slide__img rounded-xl hover:rounded-none transition-all hover:scale-105 duration-700 mx-auto w-full"
+                                src={"/challenge/21232f297a57a5a743894a0e4a801fc3.webp"}
+                                alt="Admin Login challenge"
+                            />
+                            <div className="text-center">
+                                <span>Admin Login</span>
+                            </div>
+                        </div>
+
+                        <div onClick={() => router.push('/challenge/2')} className="embla__slide hover:cursor-pointer" key="2">
+
+                            <img
+                                className="embla__slide__img rounded-xl hover:rounded-none transition-all hover:scale-105 duration-700 mx-auto w-full"
+                                src={"/challenge/3c6e0b8a9c15224a8228b9a98ca1531d.webp"}
+                                alt="Multiverse Key challenge"
+                            />
+                            <div className="text-center">
+                                <span>Multiverse Key</span>
+                            </div>
+                        </div>
                         {challenges.map((challenge) => (
-                            <div className="embla__slide hover:cursor-pointer" key={challenge.id}>
+                            <div onClick={() => router.push(`/challenge/${challenge.id}`)} className="embla__slide hover:cursor-pointer" key={challenge.id}>
 
                                 <img
-                                    className="embla__slide__img rounded-xl hover:rounded-none transition-all hover:scale-105 duration-700"
-                                    src={challenge.image != null ? challenge.image : "/avatars/null.jpg"}
-                                    alt="Your alt text"
+                                    className="embla__slide__img rounded-xl hover:rounded-none transition-all hover:scale-105 duration-700 mx-auto w-full"
+                                    src={challenge.image != null ? challenge.image : "/challenge/null.webp"}
+                                    alt={`${challenge.title} challenge`}
                                 />
                                 <div className="text-center">
                                     <span>{challenge.title}</span>

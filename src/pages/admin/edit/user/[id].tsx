@@ -19,13 +19,15 @@ const EditUser = () => {
                 if (result) {
                     getUserById(id).then((user_result) => {
                         setUserInformation(user_result);
-                        getAllRanks().then((result) => {
-                            const currentUserRank = result.find(rank => rank.id === user_result.rank);
+                        getAllRanks().then((result) => {                            
+                            const currentUserRank = result.find(rank => rank.id === user_result.rank_id);
                             const uniqueRanks = result.filter((rank, index, self) =>
                                 self.findIndex(r => r.id === rank.id) === index && rank.id !== currentUserRank?.id
                             );
 
                             const finalRanks = [currentUserRank, ...uniqueRanks];
+                            console.log(finalRanks);
+                            
                             setRanks(finalRanks as RankType[]);
                             setLoaded(true);
                         })
@@ -90,8 +92,8 @@ const EditUser = () => {
                         </div>
 
                         <div className="relative z-0 max-w-xl mb-6 group">
-                            <label htmlFor="countries" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select your country</label>
-                            <select onChange={(a) => console.log(a.target.value)} id="countries" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <label htmlFor="ranks" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Rank:</label>
+                            <select onChange={(a) => console.log(a.target.value)} id="ranks" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
 
                                 {
 

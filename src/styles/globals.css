@@ -29,6 +29,10 @@
   margin-right: 00.5rem;
 }
 
+/* .account {
+  margin: 100px auto;
+} */
+
 #tsparticles {
   position: relative;
   z-index: -1;
@@ -39,10 +43,12 @@
 }
 .embla__container {
   display: flex;
+  gap: 30px;
 }
 .embla__slide {
   flex: 0 0 30%;
   min-width: 0;
+  
 }
 
 .embla__slide__img {
@@ -51,13 +57,5 @@
 
 .embla__container {
   margin-left: 1rem;
-  margin-right: 1rem;
-}
-
-.embla__slide:first-child{
-  margin-right: 2rem;
-}
-
-.embla__slide {
-  margin-left: 2rem;
+  margin-right: 1.5rem;
 }

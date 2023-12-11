@@ -4,9 +4,10 @@ import NavbarAdminComponent from "@/components/NavbarAdminComponent";
 import SuccessAlertComponent from "@/components/SuccessAlertComponent";
 import { AlertEnum, ComponentAlertType } from "@/types/AlertType";
 import { CategoryType } from "@/types/CategoryType";
+import { ChallengeType } from "@/types/ChallengeType";
 import { DeleteType } from "@/types/DeleteType";
 import { UserType } from "@/types/UserType";
-import { categoryIdExist, deleteCategory, deleteRank, getAllCategories, getAllRanks, getCategoryById, getRankById, rankIdExist } from "@/utils/APIUtils";
+import { categoryIdExist, deleteRank, getAllChallenges, getAllRanks, getRankById } from "@/utils/APIUtils";
 import { getUserInformationByJwt } from "@/utils/JwtUtils";
 import { getJwtInLocalStorage, hasAJwtInLocalStorage } from "@/utils/LocalStorageUtils";
 import { useRouter } from "next/router";
@@ -17,7 +18,7 @@ const AdminCategories = () => {
     const [userInformation, setUserInformation] = useState<UserType | null>(null)
     const [loaded, setLoaded] = useState(false);
     const [opened, setOpened] = useState(false);
-    const [categories, setCategories] = useState<CategoryType[]>([]);
+    const [challenges, setChallenges] = useState<ChallengeType[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedID, setSelectedID] = useState<string | null>(null);
     const [deleted, setDeleted] = useState<ComponentAlertType[]>([]);
@@ -40,8 +41,10 @@ const AdminCategories = () => {
                         if (result !== null) {
                             setUserInformation(result);
                             // Get all categories
-                            getAllCategories().then((response) => {
-                                setCategories(response);
+                            getAllChallenges().then((response) => {
+                                setChallenges(response);
+                                console.log(response);
+                                
                             })
                             setLoaded(true);
                         } else {
@@ -68,14 +71,14 @@ const AdminCategories = () => {
 
         categoryIdExist(selectedID as string).then((result) => {
             if (result) {
-                getCategoryById(selectedID!).then((category) => {
-                    setDeleted([...deleted, { type: AlertEnum.CATEGORY_DELETE, message: category.name as string }])
+                getRankById(selectedID!).then((category) => {
+                    setDeleted([...deleted, { type: AlertEnum.RANK_DELETE, message: category.name as string }])
                 })
-                deleteCategory(selectedID as string).then(() => {
-                    getAllCategories().then((categories) => {
-                        setCategories(categories.filter((category) => category.id !== selectedID));
-                    });
-                });
+                // deleteRank(selectedID as string).then(() => {
+                //     getAllRanks().then((categories) => {
+                //         setChallenges(categories.filter((category) => category.id !== selectedID));
+                //     });
+                // });
 
             }
 
@@ -132,7 +135,13 @@ const AdminCategories = () => {
                                         ID
                                     </th>
                                     <th scope="col" className="px-6 py-3">
-                                        Name
+                                        Title
+                                    </th>
+                                    <th scope="col" className="px-6 py-3">
+                                        Description
+                                    </th>
+                                    <th scope="col" className="px-6 py-3">
+                                        Category
                                     </th>
                                     <th scope="col" className="px-6 py-3">
                                         Created at
@@ -150,26 +159,32 @@ const AdminCategories = () => {
                             </thead>
                             <tbody>
                                 {
-                                    categories.length > 0 && (
-                                        categories.map((category) => (
+                                    challenges.length > 0 && (
+                                        challenges.map((challenge) => (
                                             <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                    {category.id}
+                                                    {challenge.id}
                                                 </th>
                                                 <td className="px-6 py-4">
-                                                    {category.name}
+                                                    {challenge.title}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {category.created_at}
+                                                    {challenge.description}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {category.updated_at}
+                                                    {challenge.category_id}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {challenge.created_at}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {challenge.updated_at}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <a href={`/admin/edit/rank/${category.id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                                                    <a href={`/admin/edit/challenge/${challenge.id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button onClick={(e) => deleteHandler(e)} name={category.id} className="font-medium text-red-600 dark:text-red-600 hover:underline">Delete</button>
+                                                    <button onClick={(e) => deleteHandler(e)} name={challenge.id} className="font-medium text-red-600 dark:text-red-600 hover:underline">Delete</button>
                                                 </td>
                                             </tr>
                                         ))

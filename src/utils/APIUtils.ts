@@ -3,6 +3,7 @@ import { getJwtInLocalStorage } from "./LocalStorageUtils"
 import { RankType } from "@/types/RankType";
 import { ChallengeCarouselType, ChallengeResponseType, ChallengeType } from "@/types/ChallengeType";
 import { QuizResponseType, QuizType } from "@/types/QuizType";
+import { CategoryResponseType, CategoryType } from "@/types/CategoryType";
 
 export const getAllUsers = () => {
     return new Promise<UserTypeRequest>(async (resolve, reject) => {
@@ -50,6 +51,22 @@ export const userIdExist = (id: string) => {
     });
 }
 
+export const challengeIdExist = (id: string) => {
+    return new Promise<boolean>(async (resolve, reject) => {
+        
+        const request = await fetch(`http://127.0.0.1/api/challenge/${id}`, {
+            method: "GET",
+            headers: {
+                Authorization: getJwtInLocalStorage()
+            }
+        });
+
+        const response = await request.json();
+
+        resolve(response.code === 200);
+    });
+}
+
 export const rankIdExist = (id: string) => {
     return new Promise<boolean>(async (resolve, reject) => {
         
@@ -82,9 +99,10 @@ export const getUserById = (id: string) => {
     });
 }
 
-export const getRankById = (rank_id: string): Promise<RankType> => {
-    return new Promise<RankType>(async (resolve, reject) => {
-        const request = await fetch(`http://127.0.0.1/api/rank/${rank_id}`, {
+export const getChallengeById = (id: string) => {
+    return new Promise<ChallengeType>(async (resolve, reject) => {
+        
+        const request = await fetch(`http://127.0.0.1/api/challenge/${id}`, {
             method: "GET",
             headers: {
                 Authorization: getJwtInLocalStorage()
@@ -92,6 +110,21 @@ export const getRankById = (rank_id: string): Promise<RankType> => {
         });
 
         const response = await request.json();
+
+        resolve(response.result);
+    });
+}
+
+export const getRankById = (rank_id: string): Promise<RankType> => {
+    return new Promise<RankType>(async (resolve, reject) => {
+        const request = await fetch(`http://127.0.0.1/api/rank/${rank_id}`, {
+            headers: {
+                Authorization: getJwtInLocalStorage()
+            }
+        });
+
+        const response = await request.json();
+        
         console.log(response);
         
         resolve(response.result);
@@ -115,7 +148,7 @@ export const getAllRanks = (): Promise<RankType[]> => {
 }
 
 export const updateUser = async (user: UserUpdateType, token: string) => {
-    await fetch(`http://127.0.0.1/api/user`, {
+    await fetch(`http://127.0.0.1/api/update/user`, {
         method: "PATCH",
         body: JSON.stringify(user),
         headers: {
@@ -138,7 +171,11 @@ export const updateRank = async (user: RankType, token: string) => {
 
 export const getAllChallenges = (): Promise<ChallengeType[]> => {
     return new Promise<ChallengeType[]>(async (resolve, reject) => {
-        const request = await fetch("http://127.0.0.1/api/list/challenge");
+        const request = await fetch("http://127.0.0.1/api/list/challenge", {
+            headers: {
+                Authorization: getJwtInLocalStorage()
+            }
+        });
         const response: ChallengeResponseType = await request.json();
         if (response.code === 200) {
             resolve(response.result);
@@ -176,7 +213,7 @@ export const createRank = async (rankName: string, rankAdmin: boolean) => {
 }
 
 export const deleteRank = async (rank_id: string) => {
-    await fetch("http://127.0.0.1/api/delete-rank", {
+    await fetch("http://127.0.0.1/api/delete/rank", {
         method: "POST",
         headers: {
             Authorization: getJwtInLocalStorage(),
@@ -184,6 +221,19 @@ export const deleteRank = async (rank_id: string) => {
         },
         body: JSON.stringify({
             id: rank_id,
+        }),
+    });
+}
+
+export const deleteCategory = async (category_id: string) => {
+    await fetch("http://127.0.0.1/api/delete/category", {
+        method: "POST",
+        headers: {
+            Authorization: getJwtInLocalStorage(),
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            id: category_id,
         }),
     });
 }
@@ -201,8 +251,8 @@ export const createCategory = async (category_name: string) => {
     });
 }
 
-export const getAllCategories = (): Promise<RankType[]> => {
-    return new Promise<RankType[]>(async (resolve, reject) => {
+export const getAllCategories = (): Promise<CategoryType[]> => {
+    return new Promise<CategoryType[]>(async (resolve, reject) => {
         const request = await fetch(`http://127.0.0.1/api/list/category`, {
             method: "GET",
             headers: {

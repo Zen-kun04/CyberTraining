@@ -1,28 +1,34 @@
+import { CategoryResponseType, CategoryType } from "@/types/CategoryType";
+import { getAllCategories } from "@/utils/APIUtils";
 import { isAdministrator, isAuthentified } from "@/utils/AuthUtils";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
-const NavbarComponent = ({ page, fixed = false}: { page: string, fixed?: boolean }) => {
+const NavbarComponent = ({ page, fixed = false }: { page: string, fixed?: boolean }) => {
     const [openMenu, setOpenMenu] = useState(true);
-    const [loaded, setLoaded] = useState(true);
+    const [loaded, setLoaded] = useState(false);
     const [logged, setLogged] = useState(false);
     const [admin, setAdmin] = useState(false);
+    const [categories, setCategories] = useState<CategoryType[]>([]);
 
-    const { systemTheme, theme, setTheme } = useTheme();
-    const currentTheme = theme === 'dark' ? systemTheme : theme;
+    const { theme, setTheme } = useTheme();
 
     useEffect(() => {
-        isAuthentified().then((result) => {
-            setLogged(result);
-            if (result) {
-                isAdministrator().then((result) => {
-                    setAdmin(result);
+        getAllCategories().then((result) => {
+            setCategories(result);
+            isAuthentified().then((result) => {
+                setLogged(result);
+                if (result) {
+                    isAdministrator().then((result) => {
+                        setAdmin(result);
+                        setLoaded(true);
+                    });
+                } else {
                     setLoaded(true);
-                });
-            } else {
-                setLoaded(true);
-            }
-        });
+                }
+            });
+        })
+
     }, [])
 
 
@@ -40,12 +46,7 @@ const NavbarComponent = ({ page, fixed = false}: { page: string, fixed?: boolean
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 1h15M1 7h15M1 13h15" />
                         </svg>
                     </button>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                        <input onChange={() => theme == "dark" ? setTheme("light") : setTheme("dark")} type="checkbox" value="" className="sr-only peer" defaultChecked={theme == "dark" ? true : false} />
 
-                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Dark mode</span>
-                    </label>
                     <div className="hidden w-full md:block md:w-auto" id="navbar-multi-level">
                         <ul className="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
                             <li>
@@ -67,18 +68,13 @@ const NavbarComponent = ({ page, fixed = false}: { page: string, fixed?: boolean
                                 </svg></button>
                                 <div id="dropdownNavbar" className={`z-10 ${openMenu ? 'hidden' : ''} absolute font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600`}>
                                     <ul className="py-2 text-sm text-gray-700 dark:text-gray-400" aria-labelledby="dropdownLargeButton">
-                                        <li>
-                                            <a href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">SQLi</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">XSS</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Information Disclosure</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Cookies</a>
-                                        </li>
+                                        {
+                                            categories.map((category) => (
+                                                <li>
+                                                    <a href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{category.name}</a>
+                                                </li>
+                                            ))
+                                        }
                                     </ul>
                                 </div>
                             </li>
@@ -118,8 +114,17 @@ const NavbarComponent = ({ page, fixed = false}: { page: string, fixed?: boolean
                             <li>
                                 <a href="#" className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Contact</a>
                             </li>
+                            <li>
+                                <a href="/legal" className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Legal</a>
+                            </li>
                         </ul>
                     </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                        <input onChange={() => theme == "dark" ? setTheme("light") : setTheme("dark")} type="checkbox" value="" className="sr-only peer" defaultChecked={theme == "dark" ? true : false} />
+
+                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Dark mode</span>
+                    </label>
                 </div>
             </nav>
 

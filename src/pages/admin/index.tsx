@@ -49,7 +49,7 @@ const AdminPage = () => {
                 <NavbarAdminComponent openHandler={setOpened} opened={opened} userInformation={userInformation} />
                 <AsideAdminComponent />
                 <div>
-                    <h1>Bienvenido Administrador !</h1>
+                    <h1>Welcome {userInformation?.username}</h1>
                 </div>
                 
             </main>

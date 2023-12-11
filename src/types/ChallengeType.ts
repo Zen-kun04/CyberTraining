@@ -1,9 +1,12 @@
 export type ChallengeType = {
-    id: string,
-    title: string,
-    description: string,
-    exploit: string,
-    image: string | null,
+    id?: string,
+    title?: string,
+    description?: string,
+    category_id?: string,
+    exploit?: string,
+    image?: string | null,
+    created_at?: string,
+    updated_at?: string,
 }
 
 export type ChallengeCarouselType = {
@@ -14,5 +17,5 @@ export type ChallengeCarouselType = {
 
 export type ChallengeResponseType = {
     code: number,
-    result: ChallengeType[]
+    result: ChallengeType[],
 }

@@ -6,6 +6,7 @@ export enum AlertEnum {
     RANK_CREATE,
     RANK_DELETE,
     CATEGORY_CREATE,
+    CATEGORY_DELETE,
 }
 
 export type ComponentAlertType = {

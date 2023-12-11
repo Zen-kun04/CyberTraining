@@ -1,35 +1,41 @@
 import NavbarComponent from "@/components/NavbarComponent";
 import ParticlesComponent from "@/components/ParticlesComponent";
+import UserContext from "@/context/UserContext";
+import { getUserById } from "@/utils/APIUtils";
 import { isJwtValid } from "@/utils/JwtUtils";
 import { JwtInLocalStorage, getJwtInLocalStorage, hasAJwtInLocalStorage, removeJwtInLocalStorage, setJwtInLocalStorage } from "@/utils/LocalStorageUtils";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 const LoginPage = () => {
     // document.title = "CyberTraining - Login to your account"
     const [message, setMessage] = useState<string | null>(null);
     const [loaded, setLoaded] = useState<boolean>(false);
     const router = useRouter();
+
+    const userContext = useContext(UserContext);
+    if(!userContext) {
+        throw "You need to envelop the app with UserContext !";
+    }
+
+    const {user} = userContext;
+
     useEffect(() => {
-        if (hasAJwtInLocalStorage()) {
-            const checkJwt = async () => {
-                const req = await fetch("http://127.0.0.1/api/session", {
-                    method: "GET",
+        const token = window.localStorage.getItem("token");
+        if (token !== null) {
+            (async () => {
+                const request = await fetch("http://localhost/api/jwt/decode", {
                     headers: {
-                        Authorization: getJwtInLocalStorage()
+                        Authorization: token
                     }
                 });
-
-                const resp = await req.json();
-                if(resp.code === 200) {
+                if (request.status === 200) {
                     router.push('/');
-                }else {
-                    removeJwtInLocalStorage();
+                }else{
                     setLoaded(true);
                 }
-            }
-            checkJwt();
-        }else {
+            })()
+        }else{
             setLoaded(true);
         }
     }, [])
@@ -56,6 +62,7 @@ const LoginPage = () => {
 
         if (d.code === 200){
             if(!JwtInLocalStorage(d.jwt)){
+                
                 setJwtInLocalStorage(d.jwt);
             }
             router.push('/');
@@ -65,7 +72,7 @@ const LoginPage = () => {
     }
 
     return (
-        loaded && (
+        loaded && user === null && (
         <main>
             <NavbarComponent page="login" />
             <div className="block ml-auto mr-auto max-w-xl mt-20">

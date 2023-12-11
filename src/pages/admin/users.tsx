@@ -40,6 +40,9 @@ const AdminUsers = () => {
                         if (result !== null){
                             setUserInformation(result);
                             getAllUsers().then((users) => {
+                                console.log("Users:");
+                                console.log(users);
+                                
                                 setUsers(users.result);
                                 setLoaded(true);
                             });
@@ -172,7 +175,7 @@ const AdminUsers = () => {
                                                 {user.email}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                {user.rank}
+                                                {user.role}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                 {user.level}

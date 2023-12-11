@@ -560,7 +560,25 @@ def crud_read(entity: str, entity_id: str):
                 })
 
             elif entity == "user":
-                if request.headers.get("Authorization", None) is not None and is_jwt_admin(request.headers.get("Authorization")):
+                if request.headers.get("Authorization", None) is not None and is_jwt_same_user(request.headers.get("Authorization", None), entity_id):
+                    cur.execute("SELECT user.id, user.username, user.created_at, user.updated_at, `rank`.name, user.avatar, user.email, user.level FROM user JOIN `rank` ON user.rank_id = `rank`.id WHERE user.id = %s",
+                                (entity_id,))
+                    if res := cur.fetchone():
+                        return jsonify({
+                            "code": 200,
+                            "result": {
+                                "id": res[0],
+                                "username": res[1],
+                                "created_at": res[2],
+                                "updated_at": res[3],
+                                "rank_name": res[4],
+                                "avatar": res[5],
+                                "email": res[6],
+                                "level": res[7],
+                            }
+
+                        })
+                elif request.headers.get("Authorization", None) is not None and is_jwt_admin(request.headers.get("Authorization")):
                     cur.execute("SELECT user.*, `rank`.name AS rank_name FROM user JOIN `rank` ON user.rank_id = `rank`.id WHERE user.id = %s",
                                 (entity_id,))
                     if res := cur.fetchone():
@@ -583,24 +601,7 @@ def crud_read(entity: str, entity_id: str):
                             }
 
                         })
-                elif request.headers.get("Authorization", None) is not None and is_jwt_same_user(request.headers.get("Authorization", None), entity_id):
-                    cur.execute("SELECT user.id, user.username, user.created_at, user.updated_at, `rank`.name, user.avatar, user.email, user.level FROM user JOIN `rank` ON user.rank_id = `rank`.id WHERE user.id = %s",
-                                (entity_id,))
-                    if res := cur.fetchone():
-                        return jsonify({
-                            "code": 200,
-                            "result": {
-                                "id": res[0],
-                                "username": res[1],
-                                "created_at": res[2],
-                                "updated_at": res[3],
-                                "rank_name": res[4],
-                                "avatar": res[5],
-                                "email": res[6],
-                                "level": res[7],
-                            }
-
-                        })
+                
                 else:
                     cur.execute("SELECT user.id, user.username, user.created_at, `rank`.name, user.avatar, user.level FROM user JOIN `rank` ON user.rank_id = `rank`.id WHERE user.id = %s",
                                 (entity_id,))
@@ -793,19 +794,20 @@ def crud_list(entity: str):
             elif entity == "user":
                 if request.headers.get("Authorization", None) is not None and is_jwt_admin(request.headers.get("Authorization")):
                     cur.execute(
-                        "SELECT id, username, rank_id, email, level, created_at, updated_at FROM user")
+                        "SELECT user.id, user.username, user.rank_id, `rank`.name as role, user.email, user.level, user.created_at, user.updated_at FROM user JOIN `rank` ON `rank`.id = user.rank_id")
                     if res := cur.fetchall():
                         result = [
                             {
-                                "id": category[0],
-                                "username": category[1],
-                                "rank_id": category[2],
-                                "email": category[3],
-                                "level": category[4],
-                                "created_at": category[5],
-                                "updated_at": category[6],
+                                "id": user[0],
+                                "username": user[1],
+                                "rank_id": user[2],
+                                "role": user[3],
+                                "email": user[4],
+                                "level": user[5],
+                                "created_at": user[6],
+                                "updated_at": user[7],
                             }
-                            for category in res
+                            for user in res
                         ]
                         return jsonify({
                             "code": 200,
@@ -887,10 +889,12 @@ def crud_create(entity: str):
 @app.route('/api/update/<entity>', methods=["PATCH"])
 def crud_update(entity: str):
     try:
-        print(generate_jwt("63c1ec6f-5cb3-478e-a7e7-7d9c10abb5ad", "Tester", "yes"))
+        print(1)
         if entity in ENTITY_LIST:
+            print(2)
             data: dict = request.get_json()
             if request.headers.get("Authorization", None) is not None and is_jwt_admin(request.headers.get("Authorization")):
+                print(3)
                 if entity == "rank":
                     if data is not None and ("id" in data and "name" in data and "admin" in data):
                         conn = mysql.connect(
@@ -926,18 +930,22 @@ def crud_update(entity: str):
                         "error": "Invalid category ID"
                     })
                 elif entity == "user":
-                    if data is not None and ("id" in data and "username" in data and "email" in data and "rank_id" in data):
+                    print(4)
+                    print(data)
+                    if data is not None and ("id" in data and "username" in data and "email" in data and "rank" in data):
+                        print(5)
                         conn = mysql.connect(
                             host=DATABASE_HOST, port=DATABASE_PORT, username=DATABASE_USERNAME, password=DATABASE_PASSWORD, database=DATABASE_NAME)
                         cur = conn.cursor()
                         cur.execute("UPDATE user SET username = %s, email = %s, rank_id = %s, updated_at = %s WHERE id = %s",
-                                    (data["username"], data["email"], data["rank_id"], datetime.now().strftime("%Y-%m-%d %H:%M:%S"), data["id"]))
+                                    (data["username"], data["email"], data["rank"], datetime.now().strftime("%Y-%m-%d %H:%M:%S"), data["id"]))
                         conn.commit()
-
+                        print(6)
                         return jsonify({
                             "code": 200,
                             "result": "Successfully updated user"
                         })
+                    print(7)
                     return jsonify({
                         "code": 400,
                         "error": "Invalid user ID"
